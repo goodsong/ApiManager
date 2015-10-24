@@ -145,7 +145,7 @@
             return $_SESSION[$pre];
         }else{
             if(is_null($value)){
-                return $_SESSION[$pre][$key];
+                return isset($_SESSION[$pre][$key])?$_SESSION[$pre][$key]:'';
             }else{
                 $_SESSION[$pre][$key] = $value;
             }

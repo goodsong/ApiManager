@@ -1,7 +1,6 @@
 <?php
     include './MinPHP/run/init.php';
-    $act = $_GET['act'];
-    $act = empty($act) ? 'index' : $_GET['act'];
+    $act = isset($_GET['act'])&&(!empty($_GET['act'])) ? $_GET['act']:'index';
     $menu = '';
     switch($act){
         //接口分类

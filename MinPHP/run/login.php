@@ -1,7 +1,7 @@
 <!--登录与退出start-->
 <?php defined('API') or exit('http://gwalker.cn');?>
 <?php
-    $type= I($_GET['type']);
+    $type= isset($_GET['type'])?I($_GET['type']):'';
     //登录
     if($type  == 'do'){
         $_VAL = I($_POST);

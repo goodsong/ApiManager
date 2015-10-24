@@ -3,8 +3,8 @@
 <?php
    $_VAL = I($_POST);
    //操作类型{add,delete,edit}
-   $op = $_GET['op'];
-   $type = $_GET['type'];
+   $op = isset($_GET['op'])?$_GET['op']:'';
+   $type = isset($_GET['type'])?$_GET['type']:'';
    //添加接口
    if($op == 'add'){
         if($type == 'do'){
@@ -15,28 +15,28 @@
             }
             $num = htmlspecialchars($_POST['num'],ENT_QUOTES);   //接口编号(为了导致编号的前导0去过滤掉。不用用I方法过滤)
             $name = $_VAL['name'];  //接口名称
-            $memo = $_VAL['memo']; //备注
+            $return_des = $_VAL['return_des']; //备注
             $des = $_VAL['des'];    //描述
             $type = $_VAL['type'];  //请求方式
             $url = $_VAL['url'];
 
             $parameter = serialize($_VAL['p']);
-            $re = $_VAL['re'];  //返回值
+            $return_example = $_VAL['return_example'];  //返回值
             $lasttime = time(); //最后操作时间
             $lastuid = session('id'); //操作者id
             $isdel = 0; //是否删除的标识
             $sql = "insert into api (
             `aid`,`num`,`name`,`des`,`url`,
-            `type`,`parameter`,`re`,`lasttime`,
-            `lastuid`,`isdel`,`memo`,`ord`
+            `type`,`parameter`,`return_example`,`lasttime`,
+            `lastuid`,`isdel`,`return_des`,`ord`
             )values (
             '{$aid}','{$num}','{$name}','{$des}','{$url}',
-            '{$type}','{$parameter}','{$re}','{$lasttime}',
-            '{$lastuid}','{$isdel}','{$memo}','99999'
+            '{$type}','{$parameter}','{$return_example}','{$lasttime}',
+            '{$lastuid}','{$isdel}','{$return_des}','99999'
             )";
             $re = insert($sql);
             if($re){
-                go(U(array('act'=>'api','tag'=>$_GET['tag'])));
+            	go(U(array('act'=>'api','tag'=>$_GET['tag'])));
             }else{
                 echo '<div class="alert alert-danger" role="alert"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> 添加失败</div>';
             }
@@ -49,19 +49,20 @@
            $id = $_VAL['id'];   //接口id
            $num = htmlspecialchars($_POST['num'],ENT_QUOTES);   //接口编号(为了导致编号的前导0去过滤掉。不用用I方法过滤)
            $name = $_VAL['name'];  //接口名称
-           $memo = $_VAL['memo']; //备注
+           $return_des = $_VAL['return_des']; //备注
            $des = $_VAL['des'];    //描述
            $type = $_VAL['type'];  //请求方式
+           $status = $_VAL['status'];
            $url = $_VAL['url']; //请求地址
 
            $parameter = serialize($_VAL['p']);
-           $re = $_VAL['re'];  //返回值
+           $return_example = $_VAL['return_example'];  //返回值
            $lasttime = time(); //最后操作时间
            $lastuid = session('id'); //操作者id
 
            $sql ="update api set num='{$num}',name='{$name}',
-           des='{$des}',url='{$url}',type='{$type}',
-           parameter='{$parameter}',re='{$re}',lasttime='{$lasttime}',lastuid='{$lastuid}',memo='{$memo}'
+           des='{$des}',url='{$url}',type='{$type}',status='{$status}',
+           parameter='{$parameter}',return_example='{$return_example}',lasttime='{$lasttime}',lastuid='{$lastuid}',return_des='{$return_des}'
            where id = '{$id}'";
            $re = update($sql);
            if($re){
@@ -91,7 +92,7 @@
        }
    //此分类下的接口列表
    }else{
-        $sql = "select api.id,aid,num,url,name,des,parameter,memo,re,lasttime,lastuid,type,login_name
+        $sql = "select api.id,aid,num,url,name,des,parameter,return_des,return_example,lasttime,lastuid,type,status,login_name
         from api
         left join user
         on api.lastuid=user.id
@@ -140,10 +141,10 @@
                         <table class="table">
                             <thead>
                             <tr>
-                                <th class="col-md-3">参数名</th>
-                                <th class="col-md-2">必传</th>
+                                <th class="col-md-2">参数名</th>
+                                <th class="col-md-1">必传</th>
                                 <th class="col-md-2">缺省值</th>
-                                <th class="col-md-4">描述</th>
+                                <th class="col-md-6">描述</th>
                                 <th class="col-md-1">
                                     <button type="button" class="btn btn-success" onclick="add()">新增</button>
                                 </th>
@@ -168,12 +169,12 @@
                         </table>
                     </div>
                     <div class="form-group">
-                        <h5>返回结果</h5>
-                        <textarea name="re" rows="3" class="form-control" placeholder="返回结果"></textarea>
+                        <h5>返回值说明</h5>
+                        <textarea name="return_des" rows="10" class="form-control" placeholder="返回说明"></textarea>
                     </div>
                     <div class="form-group">
-                        <h5>备注</h5>
-                        <textarea name="memo" rows="3" class="form-control" placeholder="备注"></textarea>
+                        <h5>返回值样例</h5>
+                        <textarea name="return_example" rows="10" class="form-control" placeholder="返回值样例"></textarea>
                     </div>
                     <button class="btn btn-success">Submit</button>
                 </form>
@@ -245,15 +246,25 @@
                             <option value="POST" <?php echo $selected[1]?>>POST</option>
                         </select>
                     </div>
+                    <div class="form-group" required="required">
+                        <select class="form-control" name="status">
+                            <?php
+                                $selected[0] = ($info['status'] == 1) ? 'selected' : '';
+                                $selected[1] = ($info['status'] == 2) ? 'selected' : '';
+                            ?>
+                            <option value="1"  <?php echo $selected[0]?>>开发中</option>
+                            <option value="2" <?php echo $selected[1]?>>已开通</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <h5>请求参数</h5>
                         <table class="table">
                             <thead>
                             <tr>
-                                <th class="col-md-3">参数名</th>
-                                <th class="col-md-2">必传</th>
+                                <th class="col-md-2">参数名</th>
+                                <th class="col-md-1">必传</th>
                                 <th class="col-md-2">缺省值</th>
-                                <th class="col-md-4">描述</th>
+                                <th class="col-md-6">描述</th>
                                 <th class="col-md-1">
                                     <button type="button" class="btn btn-success" onclick="add()">新增</button>
                                 </th>
@@ -287,12 +298,12 @@
                         </table>
                     </div>
                     <div class="form-group">
-                        <h5>返回结果</h5>
-                        <textarea name="re" rows="3" class="form-control" placeholder="返回结果"><?php echo $info['re']?></textarea>
+                        <h5>返回值说明</h5>
+                        <textarea name="return_des" rows="10" class="form-control" placeholder="返回值说明"><?php echo $info['return_des']?></textarea>
                     </div>
                     <div class="form-group">
-                        <h5>备注</h5>
-                        <textarea name="memo" rows="3" class="form-control" placeholder="备注"><?php echo $info['memo']?></textarea>
+                        <h5>返回值样例</h5>
+                        <textarea name="return_example" rows="10" class="form-control" placeholder="返回值样例"><?php echo $info['return_example']?></textarea>
                     </div>
                     <button class="btn btn-success">Submit</button>
                 </form>
@@ -342,6 +353,7 @@
                 <h4 class="textshadow"><?php echo $v['name']?></h4>
                 <p>
                     <b>编号&nbsp;&nbsp;:&nbsp;&nbsp;<span style="color:red"><?php echo $v['num']?></span></b>
+                    <b>状态&nbsp;&nbsp;:&nbsp;&nbsp;<?php if( $v['status']==2){?><span style="color:green">已开通</span><?php }else{?> <span style="color:red">开发中</span><?php }?></b>
                 </p>
                 <div>
                     <?php
@@ -358,15 +370,15 @@
                 <?php echo $v['des']?>
             </div>
             <?php } ?>
-            <div style="background:#ffffff;padding:20px;">
+            <div style="background:#ffffff;padding:10px;">
                 <h5 class="textshadow" >请求参数</h5>
                 <table class="table">
                     <thead>
                     <tr>
-                        <th class="col-md-3">参数名</th>
-                        <th class="col-md-2">必传</th>
+                        <th class="col-md-2">参数名</th>
+                        <th class="col-md-1">必传</th>
                         <th class="col-md-2">缺省值</th>
-                        <th class="col-md-5">描述</th>
+                        <th class="col-md-7">描述</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -386,20 +398,58 @@
                     </tbody>
                 </table>
             </div>
-            <?php if(!empty($v['re'])){ ?>
-            <div style="background:#ffffff;padding:20px;">
-                <h5 class="textshadow" >返回值</h5>
-                <pre><?php echo $v['re']?></pre>
+            <?php if(!empty($v['return_des'])){ ?>
+            <div style="background:#ffffff;padding:10px;">
+                <h5 class="textshadow" >返回值说明</h5>
+                <pre><?php echo $v['return_des']?></pre>
             </div>
             <?php } ?>
-            <?php if(!empty($v['memo'])){ ?>
-            <div style="background:#ffffff;padding:20px;">
-                <h5 class="textshadow">备注</h5>
-                <pre style="background:honeydew"><?php echo $v['memo']?></pre>
+            <?php if(!empty($v['return_example'])){ ?>
+            <div style="background:#ffffff;padding:10px;">
+                <h5 class="textshadow">返回值样例</h5>
+                <pre style="background:honeydew"><?php echo $v['return_example']?></pre>
             </div>
             <?php } ?>
+            <!-- 接口测试添加 -->
+	        <div style="background:#ffffff;padding:10px;">
+	        <h5 class="textshadow" >接口测试 <?php echo $v['type'].':'.C('api_site->url').$v['url']?></h5>
+	        <form  id="api_<?php echo $v['id']?>" action="<?php echo C('api_site->url').$v['url']?>" method="<?php echo $v['type']?>">
+	        	<div class="form-group">
+	                <table class="table">
+	                    <thead>
+	                     <tr>
+	                        <th class="col-md-2">参数名</th>
+	                        <th class="col-md-2">参数值</th>
+	                     </tr>
+	                     </thead>
+	                     <tbody id="parameter">
+	
+	                            <?php $parameter = unserialize($v['parameter']);
+	                            $count = count($parameter['name']);?>
+	                            <?php for($i=0;$i<$count;$i++){ if($parameter['name'][$i]!='sign' && $parameter['name'][$i]!='timestamp'){?>
+	                            <tr>
+	                                <td class="form-group has-error">
+	                                    <label><?php echo $parameter['name'][$i]?></label>
+	                                </td>
+	                                <td><input type="text" class="form-control" name="<?php echo $parameter['name'][$i]?>" placeholder="缺省值" value="<?php echo $parameter['default'][$i]?>"></td>
+	                            </tr>
+	                            <?php }} ?>
+	
+	                     </tbody>
+	                  </table>
+	               </div>
+	               <button id="#btn_api_<?php echo $v['id']?>" data-form="<?php echo $v['id']?>" type="button"class="btn btn-success">提交</button>
+	        </form>
+	        <div style="background:#ffffff;padding:10px;">
+                <pre id="request_api_<?php echo $v['id']?>" style="display: none"></pre>
+                <pre id="response_api_<?php echo $v['id']?>" style="display: none"></pre>
+            </div>
+            
+	        </div>
+			<!-- 接口测试结束 -->
         </div>
         <!--接口详细列表end-->
+        
         <!--接口详情返回顶部按钮start-->
         <div id="gotop" onclick="goTop()" style="z-index:999999;font-size:18px;display:none;color:#e6e6e6;cursor:pointer;width:42px;height:42px;border:#ddd 1px solid;line-height:42px;text-align:center;background:rgba(91,192,222, 0.8);position:fixed;right:20px;bottom:200px;border-radius:50%;box-shadow: 0px 0px 0px 1px #cccccc;">
             T
@@ -411,7 +461,44 @@
             <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> 此分类下还没有任何接口
         </div>
     <?php }?>
+    <script src="../MinPHP/res/jquery.min.js"></script>
+    <script src="../MinPHP/res/jquery.md5.js"></script>
     <script>
+    (function($){
+    	$(document).ready(function(){
+    		$('button').click(function(){
+        		if($(this).attr('data-form')){//api测试按钮
+        			var api='api_'+$(this).attr('data-form');
+        			var formId = '#api_'+$(this).attr('data-form'); 
+    	        	var request=$(formId+" input").map(function(){
+    	        		  return ($(this).attr("name")+'='+$(this).val());
+    	        		}).get();
+
+    	        	request.push("timestamp=<?php echo date('Y-m-d H:i:s',time())?>");
+	        		var mm = request.slice(0);
+	        		mm = mm.sort().join('')+"<?php echo C('api_site->apiSecret')?>";
+	        		mdd = $.md5(mm);
+					request.push("sign="+mdd);
+    	        	$.ajax({
+                        type: $(formId).attr('method'),
+                        url: $(formId).attr('action'),
+                        dataType:'json',
+                        data:request.join('&'),
+                        success: function (result) {
+                        	$('#request_'+api).css('display','block');
+                            $('#request_'+api).html("发送：<br/>"+request.join('&amp;'));
+                            $('#response_'+api).css('display','block');
+                            $('#response_'+api).html("返回：<br/>"+JSON.stringify(result, null, '\t'));
+                        },
+                        error: function(data) {
+                            alert("error:"+data.responseText);
+                         }
+
+                    });
+        		}
+	        });
+    	});
+    })(jQuery);
         //删除某个接口
         var $url = '<?php echo U(array('act'=>'ajax','op'=>'apiDelete'))?>';
         function deleteApi(apiId,divId){
@@ -427,6 +514,10 @@
         //编辑某个接口
         function editApi(gourl){
             window.location.href=gourl;
+        }
+        //提交表单
+        function onSubmit(formId){
+            $('#'+formId).submit();
         }
 
         //返回顶部

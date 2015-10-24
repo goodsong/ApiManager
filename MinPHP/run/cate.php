@@ -3,9 +3,9 @@
 <?php
 if(!is_supper()){die('只有超级管理员才可对分类进行操作');}
 //操作类型{add,delete,edit}
-$op = I($_POST['op']);
+$op = isset($_POST['op'])?I($_POST['op']):'';
 //是否执行操作(如果为do的话,则为执行添加,删除,编辑操作)
-$type = I($_GET['type']);
+$type = isset($_GET['type'])?I($_GET['type']):'';
 switch($op){
     //添加
     case 'add':
