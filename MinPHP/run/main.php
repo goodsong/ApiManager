@@ -7,13 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>API接口管理工具</title>
     <link rel="icon" type="image/x-icon" href="./MinPHP/res/favicon.ico">
-    <link href="./MinPHP/res/bootstrap-3.3.4-dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./MinPHP/res/style.css" rel="stylesheet">
-    <link href="./MinPHP/res/datepicker.css" rel="stylesheet">
+    <link href="<?php echo C('site->url')?>/MinPHP/res/bootstrap-3.3.4-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo C('site->url')?>/MinPHP/res/style.css" rel="stylesheet">
+    <link href="<?php echo C('site->url')?>/MinPHP/res/datepicker.css" rel="stylesheet">
     <!--[if lt IE 9]>
-    <script src="./MinPHP/res/html5shiv.min.js"></script>
-    <script src="./MinPHP/res/respond.min.js"></script>
+    <script src="<?php echo C('site->url')?>/MinPHP/res/html5shiv.min.js"></script>
+    <script src="<?php echo C('site->url')?>/MinPHP/res/respond.min.js"></script>
     <![endif]-->
+    <script src="<?php echo C('site->url')?>/MinPHP/res/jquery.min.js"></script>
+	<script src="<?php echo C('site->url')?>/MinPHP/res/jquery.cookie.js"></script>
+	<script src="<?php echo C('site->url')?>/MinPHP/res/jquery.md5.js"></script>
+	<script src="<?php echo C('site->url')?>/MinPHP/res/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+	<script src="<?php echo C('site->url')?>/MinPHP/res/bootstrap-datepicker.js"></script>
 </head>
 <body style="height:100%">
 <div class="container-fluid" style="background:white;height:100%;">
@@ -64,9 +69,5 @@
         </div>
     </div>
 </div>
-<script src="./MinPHP/res/jquery.min.js"></script>
-<script src="./MinPHP/res/jquery.cookie.js"></script>
-<script src="./MinPHP/res/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-<script src="./MinPHP/res/bootstrap-datepicker.js"></script>
 </body>
 </html>

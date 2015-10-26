@@ -24,7 +24,6 @@
                 </a>
                 <br>
                 <?php echo '&nbsp;&nbsp;&nbsp;&nbsp;'.$v['cdesc'];echo "<input type='hidden' name='aid' value='{$v['aid']}'>";?>
-                <br>
                 <?php if(is_supper()){?>
                 <!--只有超级管理员才可以对分类进行操作-->
                 <div style="float:right;margin-right:16px;">
@@ -65,7 +64,7 @@
             <li class="menu" id="api_<?php echo md5($v['id']);?>" >
                 <a href="<?php echo U(array('act'=>'api','tag'=>$_GET['tag'])); ?>#info_api_<?php echo md5($v['id']) ?>" id="<?php echo 'menu_'.md5($v['id'])?>">
                     <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
-                    <?php if( $v['status']==2){?><span style="background:green;color:white">Y</span><?php echo $v['name']; }else{?> <span style="background:red;color:white"><?php echo empty($v['open_time'])?'N':round(($v['open_time']-time())/86400); }?></span><?php echo $v['name']?>
+                    <?php if( $v['status']==2){?><span style="background:green;color:white">Y</span><?php }else{?> <span style="background:red;color:white"><?php echo empty($v['open_time'])?'N':round(($v['open_time']-time())/86400); }?></span><?php echo $v['name']?>
                 </a>
             </li>
             <!--接口关键字(js通过此关健字进行模糊查找)start-->

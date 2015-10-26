@@ -55,7 +55,11 @@
            $status = $_VAL['status'];
            $aid = $_VAL['aid'];
            $url = $_VAL['url']; //请求地址
-           $open_time = strtotime($_VAL['date'].' 18:00:00');
+           if(empty($_VAL['date'])||$_VAL['date']==''){
+           		$open_time = NULL;
+           }else{
+				$open_time = strtotime($_VAL['date'].' 18:00:00');
+           }
 
            $parameter = serialize($_VAL['p']);
            $return_example = $_VAL['return_example'];  //返回值
@@ -68,7 +72,7 @@
            where id = '{$id}'";
            $re = update($sql);
            if($re){
-               go(U(array('act'=>'api','tag'=>($_GET['tag'].'#info_api_'.md5($id)))));
+             go(U(array('act'=>'api','tag'=>($_GET['tag'].'#info_api_'.md5($id)))));
            }else{
                echo '<div class="alert alert-danger" role="alert"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> 修改失败</div>';
            }
@@ -105,10 +109,6 @@
         $list = select($sql);
    }
 ?>
-<script src="../MinPHP/res/jquery.min.js"></script>
-<script src="../MinPHP/res/jquery.md5.js"></script>
-<script src="./MinPHP/res/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-<script src="../MinPHP/res/bootstrap-datepicker.js"></script>
     
 <?php if($op == 'add'){ ?>
     <!--添加接口 start-->
@@ -529,8 +529,6 @@
                     });
         		}
 	        });
-	        
-    	    
     	});
     })(jQuery);
         //删除某个接口
