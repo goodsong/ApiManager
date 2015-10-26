@@ -1,18 +1,26 @@
 <?php defined('API') or exit('http://gwalker.cn');?>
 <!--导航-->
 <?php if($act != 'api' && $act != 'sort'){
-    $list = select('select * from cate where isdel=0 order by addtime desc');
+    $list = select('select * from cate where isdel=0 order by ord asc');
+    $cateCountList = select('select aa.aid,aa.total,case when bb.open is null then 0 else bb.open end as open from 	(select a.aid,count(*) as total from cate a, api b where a.aid = b.aid and a.isdel=0 and b.isdel=0 group by a.aid) aa left join'
+		.' (select a.aid,count(*) as open from cate a, api b where a.aid = b.aid and a.isdel=0 and b.isdel=0 and b.status=2 group by a.aid) bb on aa.aid=bb.aid');
+    $cateCount = array();
+    foreach ($cateCountList as $item){
+    	$cateCount[$item['aid']]=$item['open'].'/'.$item['total'];
+    }
 ?>
+<!--
     <div class="form-group">
         <input type="text" class="form-control" id="searchcate" onkeyup="search('cate',this)" placeholder="search here">
     </div>
+-->
     <div class="list">
         <ul class="list-unstyled">
             <?php foreach($list as $v){?>
             <form action="?act=cate" method="post">
             <li class="menu" id="info_<?php echo $v['aid'];?>">
                 <a href="<?php echo U(array('act'=>'api','tag'=>$v['aid']))?>">
-                    <?php echo $v['cname']?>
+                    <?php echo $v['cname'].'('.(empty($cateCount[$v['aid']])?'0/0':$cateCount[$v['aid']]).')'?>
                 </a>
                 <br>
                 <?php echo '&nbsp;&nbsp;&nbsp;&nbsp;'.$v['cdesc'];echo "<input type='hidden' name='aid' value='{$v['aid']}'>";?>
@@ -46,16 +54,18 @@
 <?php } else{
     $sql = "select * from api where aid = '{$_GET['tag']}' and isdel='0' order by ord desc,id desc";
     $list = select($sql);?>
+    <!-- 
     <div class="form-group">
         <input type="text" class="form-control" id="searchapi" placeholder="search here" onkeyup="search('api',this)">
     </div>
+   -->
     <div class="list">
         <ul class="list-unstyled" style="padding:10px">
             <?php foreach($list as $v){ ?>
             <li class="menu" id="api_<?php echo md5($v['id']);?>" >
                 <a href="<?php echo U(array('act'=>'api','tag'=>$_GET['tag'])); ?>#info_api_<?php echo md5($v['id']) ?>" id="<?php echo 'menu_'.md5($v['id'])?>">
                     <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
-                    <?php echo $v['name'] ?>
+                    <?php if( $v['status']==2){?><span style="background:green;color:white">Y</span><?php echo $v['name']; }else{?> <span style="background:red;color:white"><?php echo empty($v['open_time'])?'N':round(($v['open_time']-time())/86400); }?></span><?php echo $v['name']?>
                 </a>
             </li>
             <!--接口关键字(js通过此关健字进行模糊查找)start-->
@@ -80,6 +90,7 @@
     function search(type,obj){
         var $find = $.trim($(obj).val());//得到搜索内容
         if(type == 'cate'){//对接口分类进行搜索操作
+            alert($find);
             if($find != ''){
                 $(".menu").hide();
                 //找到符合关键字的对象

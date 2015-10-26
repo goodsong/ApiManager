@@ -53,7 +53,9 @@
            $des = $_VAL['des'];    //描述
            $type = $_VAL['type'];  //请求方式
            $status = $_VAL['status'];
+           $aid = $_VAL['aid'];
            $url = $_VAL['url']; //请求地址
+           $open_time = strtotime($_VAL['date'].' 18:00:00');
 
            $parameter = serialize($_VAL['p']);
            $return_example = $_VAL['return_example'];  //返回值
@@ -61,7 +63,7 @@
            $lastuid = session('id'); //操作者id
 
            $sql ="update api set num='{$num}',name='{$name}',
-           des='{$des}',url='{$url}',type='{$type}',status='{$status}',
+           des='{$des}',url='{$url}',type='{$type}',status='{$status}',aid='{$aid}',open_time='${open_time}',
            parameter='{$parameter}',return_example='{$return_example}',lasttime='{$lasttime}',lastuid='{$lastuid}',return_des='{$return_des}'
            where id = '{$id}'";
            $re = update($sql);
@@ -77,6 +79,7 @@
        //得到数据的详情信息start
        $sql = "select * from api where id='{$id}' and aid='{$aid}'";
        $info = find($sql);
+       $info['date']=empty($info['open_time'])?'':date('Y-m-d',$info['open_time']);
        //得到数据的详情信息end
        if(!empty($info)){
            $info['parameter'] = unserialize($info['parameter']);
@@ -90,9 +93,10 @@
            }
            $info['parameter'] = $info['parameter'];
        }
+       $cateList = select('select * from cate where isdel=0 order by ord asc');
    //此分类下的接口列表
    }else{
-        $sql = "select api.id,aid,num,url,name,des,parameter,return_des,return_example,lasttime,lastuid,type,status,login_name
+        $sql = "select api.id,aid,num,url,name,des,parameter,return_des,return_example,open_time,lasttime,lastuid,type,status,login_name
         from api
         left join user
         on api.lastuid=user.id
@@ -101,6 +105,11 @@
         $list = select($sql);
    }
 ?>
+<script src="../MinPHP/res/jquery.min.js"></script>
+<script src="../MinPHP/res/jquery.md5.js"></script>
+<script src="./MinPHP/res/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+<script src="../MinPHP/res/bootstrap-datepicker.js"></script>
+    
 <?php if($op == 'add'){ ?>
     <!--添加接口 start-->
     <div style="border:1px solid #ddd">
@@ -153,7 +162,7 @@
                             <tbody id="parameter">
                             <tr>
                                 <td class="form-group has-error">
-                                    <input type="text" class="form-control" name="p[name][]" placeholder="参数名" required="required">
+                                    <input type="text" class="form-control" name="p[name][]" placeholder="参数名" required="required" />
                                 </td>
                                 <td>
                                     <select class="form-control" name="p[type][]">
@@ -161,8 +170,8 @@
                                         <option value="N">N</option>
                                     </select>
                                 </td>
-                                <td><input type="text" class="form-control" name="p[default][]" placeholder="缺省值"></td>
-                                <td><textarea name="p[des][]" rows="1" class="form-control" placeholder="描述"></textarea></td>
+                                <td><input type="text" class="form-control" name="p[default][]" placeholder="缺省值" /></td>
+                                <td><input type="text" class="form-control" name="p[des][]" placeholder="描述" /></td>
                                 <td><button type="button" class="btn btn-danger" onclick="del(this)">删除</button></td>
                             </tr>
                             </tbody>
@@ -184,16 +193,16 @@
     <script>
         function add(){
             var $html ='<tr>' +
-                '<td class="form-group has-error" ><input type="text" class="form-control has-error" name="p[name][]" placeholder="参数名" required="required"></td>' +
+                '<td class="form-group has-error" ><input type="text" class="form-control has-error" name="p[name][]" placeholder="参数名" required="required" /></td>' +
                 '<td>' +
                 '<select class="form-control" name="p[type][]">' +
                 '<option value="Y">Y</option> <option value="N">N</option>' +
                 '</select >' +
                 '</td>' +
                 '<td>' +
-                '<input type="text" class="form-control" name="p[default][]" placeholder="缺省值"></td>' +
+                '<input type="text" class="form-control" name="p[default][]" placeholder="缺省值"/></td>' +
                 '<td>' +
-                '<textarea name="p[des][]" rows="1" class="form-control" placeholder="描述"></textarea>' +
+                '<input type="text" class="form-control" name="p[des][]" placeholder="描述"/>' +
                 '</td>' +
                 '<td>' +
                 '<button type="button" class="btn btn-danger" onclick="del(this)">删除</button>' +
@@ -254,6 +263,20 @@
                             ?>
                             <option value="1"  <?php echo $selected[0]?>>开发中</option>
                             <option value="2" <?php echo $selected[1]?>>已开通</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                    	<div id="dp" class="input-group date">
+                    		<div class="input-group-addon">计划完成日期</div>
+                           <input type="text" class="form-control" name="date" value="<?php echo $info['date']?>"/>
+                           <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                        </div>
+                    </div>
+                    <div class="form-group" required="required">
+                        <select class="form-control" name="aid">
+                        	 <?php foreach($cateList as $cat){ $selected = ($cat['aid'] == $info['aid']) ? 'selected' : '';?>
+                        	 	<option value="<?php echo $cat['aid'] ?>"  <?php echo $selected ?>><?php echo $cat['cname'] ?></option>
+                        	 <?php }?>
                         </select>
                     </div>
                     <div class="form-group">
@@ -335,6 +358,16 @@
         function del(obj){
             $(obj).parents('tr').remove();
         }
+        $(document).ready(function(){
+        	$('#dp').datepicker({
+                format: "yyyy-mm-dd",
+                todayBtn: "linked",
+                language: "zh-CN",
+                calendarWeeks: true,
+                autoclose: true,
+                todayHighlight: true
+            });
+        });
     </script>
     <!--修改接口 end-->
 <?php }else{ ?>
@@ -354,6 +387,7 @@
                 <p>
                     <b>编号&nbsp;&nbsp;:&nbsp;&nbsp;<span style="color:red"><?php echo $v['num']?></span></b>
                     <b>状态&nbsp;&nbsp;:&nbsp;&nbsp;<?php if( $v['status']==2){?><span style="color:green">已开通</span><?php }else{?> <span style="color:red">开发中</span><?php }?></b>
+                    <b>计划完成日期&nbsp;&nbsp;:&nbsp;&nbsp;<?php echo empty($v['open_time'])?'':date('Y-m-d H:i:s',$v['open_time'])?></b>
                 </p>
                 <div>
                     <?php
@@ -461,8 +495,6 @@
             <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> 此分类下还没有任何接口
         </div>
     <?php }?>
-    <script src="../MinPHP/res/jquery.min.js"></script>
-    <script src="../MinPHP/res/jquery.md5.js"></script>
     <script>
     (function($){
     	$(document).ready(function(){
@@ -497,6 +529,8 @@
                     });
         		}
 	        });
+	        
+    	    
     	});
     })(jQuery);
         //删除某个接口

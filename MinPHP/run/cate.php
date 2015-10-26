@@ -15,7 +15,7 @@ switch($op){
             $cdesc = $_VAL['cdesc'];
             $time = time();
             if(!empty($cname) && !empty($cdesc)){
-                $sql = "insert into cate (cname,cdesc,addtime) values('{$cname}','{$cdesc}','{$time}')";
+                $sql = "insert into cate (cname,cdesc,addtime,ord) values('{$cname}','{$cdesc}','{$time}',1)";
                 $re = insert($sql);
                 if($re){
                     go(U());
@@ -42,7 +42,7 @@ switch($op){
     case 'edit';
         $_VAL = I($_POST);
         if($type == 'do'){
-            $sql = "update cate set cname='{$_VAL['cname']}',cdesc='{$_VAL['cdesc']}' where aid='{$_VAL['aid']}'";
+            $sql = "update cate set cname='{$_VAL['cname']}',cdesc='{$_VAL['cdesc']}',ord='{$_VAL['ord']}' where aid='{$_VAL['aid']}'";
             $re = update($sql);
             if($re !== false){
                 go(U());
@@ -61,13 +61,15 @@ switch($op){
     <div style="border:1px solid #ddd">
         <div style="background:#f5f5f5;padding:20px;position:relative">
             <h4>添加分类</h4>
-            <div>
-                <form action="?act=cate&type=do" method="post">
+            <div >
+                <form  action="?act=cate&type=do" method="post">
                     <div class="form-group">
-                        <input type="text" class="form-control" name="cname" placeholder="分类名">
+                    	<label for="cnameLabel" >分类：</label>
+                        <input type="text" class="form-control" name="cname" placeholder="请输入分类名" />
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="cdesc" placeholder="描述">
+                    	<label for="cdescLabel" >描述：</label>
+                        <input type="text" class="form-control" name="cdesc" placeholder="请输入描述" />
                     </div>
                     <button class="btn btn-success" name="op" value="add">Submit</button>
                 </form>
@@ -82,10 +84,16 @@ switch($op){
                 <form action="?act=cate&type=do" method="post">
                     <div class="form-group">
                         <input type="hidden" name="aid" value="<?php echo $info['aid'] ?>">
-                        <input type="text" class="form-control" name="cname" placeholder="分类名" value="<?php echo $info['cname'] ?>">
+                        <label for="cnameLabel">分类：</label>
+                        <input type="text" class="form-control" name="cname" placeholder="请输入分类名" value="<?php echo $info['cname'] ?>">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="cdesc" placeholder="描述" value="<?php echo $info['cdesc'] ?>">
+                   		<label for="cdescLabel">描述：</label>
+                        <input type="text" class="form-control" name="cdesc" placeholder="请输入描述" value="<?php echo $info['cdesc'] ?>">
+                    </div>
+                    <div class="form-group">
+                    	<label for="ordLabel">排序：</label>
+                        <input type="text" class="form-control" name="ord" placeholder="排序" value="<?php echo $info['ord'] ?>">
                     </div>
                     <button class="btn btn-success" name="op" value="edit">Submit</button>
                 </form>
